@@ -40,7 +40,6 @@
 #include <time.h>
 
 #include <openssl/rand.h>
-#include <rte_malloc.h>
 
 #include "ff_host_interface.h"
 #include "ff_errno.h"
@@ -211,9 +210,9 @@ ff_update_current_ts()
 void
 ff_arc4rand(void *ptr, unsigned int len, int reseed)
 {
-    (void)reseed;
+	srandom(reseed);
 
-    RAND_bytes(ptr, len);
+	*((uint32_t *)ptr) = rand() ;
 }
 
 uint32_t
@@ -327,5 +326,13 @@ void ff_os_errno(int error)
         default:              errno = error; break;
     }
 
+}
+
+uint64_t
+ff_get_tsc_ns()
+{
+	struct timespec timespec;
+	clock_gettime(CLOCK_MONOTONIC, &timespec);
+	return timespec.tv_sec * 1000 * 1000 * 1000 + timespec.tv_nsec;
 }
 

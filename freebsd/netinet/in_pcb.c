@@ -1106,55 +1106,13 @@ in_pcbconnect_setup(struct inpcb *inp, struct sockaddr *nam,
 			*oinpp = oinp;
 		return (EADDRINUSE);
 	}
-#ifndef FSTACK
 	if (lport == 0) {
 		error = in_pcbbind_setup(inp, NULL, &laddr.s_addr, &lport,
 		    cred);
 		if (error)
 			return (error);
 	}
-#else
-if (lport == 0)
-{
-    struct ifaddr *ifa;
-    struct ifnet *ifp;
-    struct sockaddr_in ifp_sin;
-    unsigned loop_count = 0;
-    bzero(&ifp_sin, sizeof(ifp_sin));
-    ifp_sin.sin_addr.s_addr = laddr.s_addr;
-    ifp_sin.sin_family = AF_INET;
-    ifp_sin.sin_len = sizeof(ifp_sin);
-    ifa = ifa_ifwithnet((struct sockaddr *)&ifp_sin, 0, RT_ALL_FIBS);
-    if (ifa == NULL) {
-    	ifp_sin.sin_addr.s_addr = faddr.s_addr;
-    	ifa = ifa_ifwithnet((struct sockaddr *)&ifp_sin, 0, RT_ALL_FIBS);
-    	if ( ifa == NULL )
-        	return (EADDRNOTAVAIL);
-    }
-    ifp = ifa->ifa_ifp;
-    while (lport == 0) {
-        int rss;
-        error = in_pcbbind_setup(inp, NULL, &laddr.s_addr, &lport,
-            cred);
-        if (error)
-            return (error);
-        rss = ff_rss_check(ifp->if_softc, faddr.s_addr, laddr.s_addr,
-            fport, lport);
-        if (rss) {
-            break;
-        }
-        lport = 0;
-        /* Note:
-         * if all ports are completely used, just return.
-         * this ugly code is not a correct way, it just lets loop quit.
-         * we will fix it as soon as possible.
-         */
-        if (++loop_count >= 65535) {
-            return (EADDRNOTAVAIL);
-        }
-    }
-}
-#endif
+
 	*laddrp = laddr.s_addr;
 	*lportp = lport;
 	*faddrp = faddr.s_addr;

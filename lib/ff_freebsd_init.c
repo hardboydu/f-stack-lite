@@ -45,85 +45,188 @@
 
 #include "ff_host_interface.h"
 #include "ff_api.h"
-#include "ff_config.h"
 
 int ff_freebsd_init(void);
 
-extern void mutex_init(void);
-extern void mi_startup(void);
-extern void uma_startup(void *, int);
-extern void uma_startup2(void);
+struct boot_default {
+	char *field ;
+	char *value ;
+} boot_default [] = {
+	{"kern.hz"                          ,    "100"}, 
+	{"fd_reserve"                       ,   "2048"},
+	{"kern.ipc.maxsockets"              , "262144"},
+	{"net.inet.tcp.syncache.hashsize"   ,   "4096"},
+	{"net.inet.tcp.syncache.bucketlimit",    "100"},
+	{"net.inet.tcp.tcbhashsize"         ,  "65536"},
+	{"kern.ncallout"                    , "262144"},
+} ;
 
-extern void ff_init_thread0(void);
-
-struct sx proctree_lock;
-struct pcpu *pcpup;
-struct uma_page_head *uma_page_slab_hash;
-int uma_page_mask;
-extern cpuset_t all_cpus;
-
-long physmem;
+struct sysctl_default {
+	char *f ;
+	char *v ;
+	char  t ;
+} sysctl_default [] = {
+	{"kern.ipc.somaxconn"                 ,    "32768", 'i'},
+	{"kern.ipc.maxsockbuf"                , "16777216", 'l'},
+	{"net.link.ether.inet.maxhold"        ,        "5", 'i'},
+	{"net.inet.tcp.fast_finwait2_recycle" ,        "1", 'i'},
+	{"net.inet.tcp.sendspace"             ,    "16384", 'i'},
+	{"net.inet.tcp.recvspace"             ,     "8192", 'i'},
+	{"net.inet.tcp.nolocaltimewait"       ,        "1", 'i'},
+	{"net.inet.tcp.cc.algorithm"          ,    "cubic", 's'},
+	{"net.inet.tcp.sendbuf_max"           , "16777216", 'i'},
+	{"net.inet.tcp.recvbuf_max"           , "16777216", 'i'},
+	{"net.inet.tcp.sendbuf_auto"          ,        "1", 'i'},
+	{"net.inet.tcp.recvbuf_auto"          ,        "1", 'i'},
+	{"net.inet.tcp.sendbuf_inc"           ,    "16384", 'i'},
+	{"net.inet.tcp.recvbuf_inc"           ,   "524288", 'i'},
+	{"net.inet.tcp.sack.enable"           ,        "1", 'i'},
+	{"net.inet.tcp.blackhole"             ,        "1", 'i'},
+	{"net.inet.tcp.msl"                   ,     "2000", 'i'},
+	{"net.inet.tcp.delayed_ack"           ,        "0", 'i'},
+	{"net.inet.udp.blackhole"             ,        "1", 'i'},
+	{"net.inet.ip.redirect"               ,        "0", 'i'},
+} ;
+static int ff_freebsd_boot_init (void) ;
+static int ff_freebsd_sysctl_init (void) ;
+static int ff_freebsd_cpu_init(void) ;
+static int ff_freebsd_memory_init(void) ;
+static int ff_freebsd_mutex_init(void) ;
+static int ff_freebsd_module_init(void) ;
+static int ff_freebsd_filesystem_init(void) ;
 
 int
 ff_freebsd_init(void)
 {
-    int boot_pages;
-    unsigned int num_hash_buckets;
-    char tmpbuf[32] = {0};
-    void *bootmem;
-    int error;
+	ff_freebsd_boot_init() ;
 
-    snprintf(tmpbuf, sizeof(tmpbuf), "%u", ff_global_cfg.freebsd.hz);
-    error = kern_setenv("kern.hz", tmpbuf);
-    if (error != 0) {
-        panic("kern_setenv failed: kern.hz=%s\n", tmpbuf);
-    }
+	/*CPU*/
+	ff_freebsd_cpu_init() ;
 
-    struct ff_freebsd_cfg *cur;
-    cur = ff_global_cfg.freebsd.boot;
-    while (cur) {
-        error = kern_setenv(cur->name, cur->str);
-        if (error != 0) {
-            printf("kern_setenv failed: %s=%s\n", cur->name, cur->str);
-        }
+	/*Memory UMA*/
+	ff_freebsd_memory_init() ;
 
-        cur = cur->next;
-    }
+	/*Mutex*/
+	ff_freebsd_mutex_init() ;
 
-    physmem = ff_global_cfg.freebsd.physmem;
+	/*Module Startup*/
+	ff_freebsd_module_init() ;
 
-    pcpup = malloc(sizeof(struct pcpu), M_DEVBUF, M_ZERO);
-    pcpu_init(pcpup, 0, sizeof(struct pcpu));
-    CPU_SET(0, &all_cpus);
+	/*File*/
+	ff_freebsd_filesystem_init();
 
-    ff_init_thread0();
-
-    boot_pages = 16;
-    bootmem = (void *)kmem_malloc(NULL, boot_pages*PAGE_SIZE, M_ZERO);
-    uma_startup(bootmem, boot_pages);
-    uma_startup2();
-
-    num_hash_buckets = 8192;
-    uma_page_slab_hash = (struct uma_page_head *)kmem_malloc(NULL, sizeof(struct uma_page)*num_hash_buckets, M_ZERO);
-    uma_page_mask = num_hash_buckets - 1;
-
-    mutex_init();
-    mi_startup();
-    sx_init(&proctree_lock, "proctree");
-    ff_fdused_range(ff_global_cfg.freebsd.fd_reserve);
-
-    cur = ff_global_cfg.freebsd.sysctl;
-    while (cur) {
-        error = kernel_sysctlbyname(curthread, cur->name, NULL, NULL,
-            cur->value, cur->vlen, NULL, 0);
-
-        if (error != 0) {
-            printf("kernel_sysctlbyname failed: %s=%s, error:%d\n",
-                cur->name, cur->str, error);
-        }
-
-        cur = cur->next;
-    }
+	ff_freebsd_sysctl_init() ;
 
     return (0);
 }
+
+int atoi(const char *nptr);
+long atol(const char *nptr);
+
+static int 
+ff_freebsd_boot_init (void) {
+	int i = 0 ;
+	int error = 0 ;
+	for (i = 0; i < sizeof(boot_default) / sizeof(struct boot_default); ++i) {
+		error = kern_setenv(boot_default[i].field, boot_default[i].value); 
+		if(error != 0) {
+			printf("boot setenv %s = %s error\n", boot_default[i].field, boot_default[i].value);
+		}
+	}
+	return 0 ;
+}
+
+static int 
+ff_freebsd_sysctl_init (void) {
+	int  i       = 0 ;
+	int  error   = 0 ;
+	int  value_i = 0 ;
+	long value_l = 0 ;
+
+	for (i = 0; i < sizeof(sysctl_default) / sizeof(struct sysctl_default); ++i) {
+		if(sysctl_default[i].t == 'i') {
+			value_i = atoi(sysctl_default[i].v);
+			error = kernel_sysctlbyname(curthread, sysctl_default[i].f, NULL, NULL, (void *)&value_i, sizeof(int), NULL, 0);  
+		} else if(sysctl_default[i].t == 'l') {
+			value_l = atol(sysctl_default[i].v);
+			error = kernel_sysctlbyname(curthread, sysctl_default[i].f, NULL, NULL, (void *)&value_l, sizeof(long), NULL, 0);  
+		} else if(sysctl_default[i].t == 's') {
+			error = kernel_sysctlbyname(curthread, sysctl_default[i].f, NULL, NULL, (void *)sysctl_default[i].v, strlen(sysctl_default[i].v), NULL, 0);  
+		}
+
+		if(error != 0) {
+			printf("sysctl %s = %s error\n", sysctl_default[i].f, sysctl_default[i].v);
+		}
+	}
+
+	return 0 ;
+}
+
+struct pcpu *pcpup;
+extern cpuset_t all_cpus;
+
+extern void ff_init_thread0(void);
+
+static int 
+ff_freebsd_cpu_init(void) {
+	pcpup = malloc(sizeof(struct pcpu), M_DEVBUF, M_ZERO);
+	pcpu_init(pcpup, 0, sizeof(struct pcpu));
+
+	CPU_SET(0, &all_cpus);
+
+	ff_init_thread0();
+
+	return 0 ;
+}
+
+long physmem;
+struct uma_page_head *uma_page_slab_hash;
+int uma_page_mask;
+
+extern void uma_startup(void *, int);
+extern void uma_startup2(void);
+
+static int 
+ff_freebsd_memory_init(void) {
+	int boot_pages;
+	void *bootmem;
+	unsigned int num_hash_buckets;
+
+	physmem = 1048576 * 256 ;
+	
+	boot_pages = 16;
+	bootmem = (void *)kmem_malloc(NULL, boot_pages * PAGE_SIZE, M_ZERO);
+	uma_startup(bootmem, boot_pages);
+	uma_startup2();
+
+	num_hash_buckets = 8192;
+	uma_page_slab_hash = (struct uma_page_head *)kmem_malloc(NULL, sizeof(struct uma_page)*num_hash_buckets, M_ZERO);
+	uma_page_mask = num_hash_buckets - 1;
+
+	return 0 ;
+}
+
+struct sx proctree_lock;
+extern void mutex_init(void);
+
+static int 
+ff_freebsd_mutex_init (void) {
+	mutex_init();
+	sx_init(&proctree_lock, "proctree");
+	return 0 ;
+}
+
+extern void mi_startup(void);
+
+static int 
+ff_freebsd_module_init(void) {
+	mi_startup();
+	return 0 ;
+}
+
+static int 
+ff_freebsd_filesystem_init(void) {
+	ff_fdused_range(1024);
+	return 0 ;
+}
+

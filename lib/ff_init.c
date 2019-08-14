@@ -27,30 +27,60 @@
 #include <stdlib.h>
 
 #include "ff_api.h"
-#include "ff_config.h"
-#include "ff_dpdk_if.h"
+#include "ff_veth.h"
 
 extern int ff_freebsd_init();
 
-int
-ff_init(int argc, char * const argv[])
-{
-    int ret;
-    ret = ff_load_config(argc, argv);
-    if (ret < 0)
-        exit(1);
+struct ff_veth_conf ff_veth_conf_default = {
+	.name        = "veth%d",
+	.mac         = "AA:BB:CC:DD:EE:FF",
+	.ip          = "193.169.9.10" ,
+	.netmask     = "255.255.255.0",
+	.broadcast   = "193.169.9.255",
+	.gateway     = "193.169.9.1",
+	.hw_features = {
+		.rx_csum    = 0 ,
+		.rx_lro     = 0 ,
+		.tx_csum_ip = 0 , 
+		.tx_csum_l4 = 0 ,
+		.tx_tso     = 0
+	}
+};
 
-    ret = ff_dpdk_init(dpdk_argc, (char **)&dpdk_argv);
-    if (ret < 0)
-        exit(1);
+struct ff_veth_softc *
+ff_init(struct ff_veth_conf *conf, void *host_ctx)
+{
+    int ret = 0 ;
+    struct ff_veth_softc *sc ;
+
+    ret = ff_freebsd_init();
+    if (ret < 0) {
+    	return NULL ;
+    }
+
+	if(conf == NULL) {
+		sc = ff_veth_attach(&ff_veth_conf_default, host_ctx) ;
+    } else {
+		sc = ff_veth_attach(conf, host_ctx) ;
+    }
+
+    return sc ;
+}
+
+
+int
+ff_init_orig(int argc, char * const argv[])
+{
+    int ret = 0 ;
+    struct ff_veth_softc *sc ;
 
     ret = ff_freebsd_init();
     if (ret < 0)
-        exit(1);
+    	exit(1);
 
-    ret = ff_dpdk_if_up();
-    if (ret < 0)
-        exit(1);
+    sc = ff_veth_attach(&ff_veth_conf_default, NULL) ;
+    if(sc == NULL) 
+    	exit(2);
 
     return 0;
 }
@@ -58,6 +88,8 @@ ff_init(int argc, char * const argv[])
 void
 ff_run(loop_func_t loop, void *arg)
 {
-    ff_dpdk_run(loop, arg);
+	while(1) {
+		loop(arg) ;
+	}
 }
 

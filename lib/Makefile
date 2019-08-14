@@ -23,38 +23,37 @@ F-STACK_VERSION=1.20
 
 HOST_OS:=$(shell uname -s)
 
-#DEBUG=-O0 -gdwarf-2 -g3 -Wno-format-truncation
+DEBUG=-O0 -gdwarf-2 -g3 -Wno-format-truncation
 
-FF_KNI=1
+#FF_KNI=1
 #FF_NETGRAPH=1
 #FF_IPFW=1
 #FF_USE_PAGE_ARRAY=1
 FF_INET6=1
 
-
 include ${TOPDIR}/mk/kern.pre.mk
 
-ifeq ($(FF_DPDK),)
-ifeq (${MACHINE_CPUARCH},aarch64)
-    FF_DPDK=${TOPDIR}/dpdk/build
-else
-    FF_DPDK=${TOPDIR}/dpdk/x86_64-native-linuxapp-gcc
-endif
-endif
-
-ifdef RTE_SDK
-ifeq (${MACHINE_CPUARCH},aarch64) 
-    FF_DPDK=${RTE_SDK}/build
-else
-    FF_DPDK=${RTE_SDK}/x86_64-native-linuxapp-gcc
-endif
-endif
-
-DPDK_CFLAGS= -Wall -Wno-deprecated-declarations -Werror -include ${FF_DPDK}/include/rte_config.h
-DPDK_CFLAGS+= -march=native -DRTE_MACHINE_CPUFLAG_SSE -DRTE_MACHINE_CPUFLAG_SSE2 -DRTE_MACHINE_CPUFLAG_SSE3
-DPDK_CFLAGS+= -DRTE_MACHINE_CPUFLAG_SSSE3 -DRTE_MACHINE_CPUFLAG_SSE4_1 -DRTE_MACHINE_CPUFLAG_SSE4_2
-DPDK_CFLAGS+= -DRTE_COMPILE_TIME_CPUFLAGS=RTE_CPUFLAG_SSE,RTE_CPUFLAG_SSE2,RTE_CPUFLAG_SSE3,RTE_CPUFLAG_SSSE3,RTE_CPUFLAG_SSE4_1,RTE_CPUFLAG_SSE4_2
-DPDK_CFLAGS+= -I${FF_DPDK}/include
+#ifeq ($(FF_DPDK),)
+#ifeq (${MACHINE_CPUARCH},aarch64)
+#    FF_DPDK=${TOPDIR}/dpdk/build
+#else
+#    FF_DPDK=${TOPDIR}/dpdk/x86_64-native-linuxapp-gcc
+#endif
+#endif
+#
+#ifdef RTE_SDK
+#ifeq (${MACHINE_CPUARCH},aarch64) 
+#    FF_DPDK=${RTE_SDK}/build
+#else
+#    FF_DPDK=${RTE_SDK}/x86_64-native-linuxapp-gcc
+#endif
+#endif
+#
+#DPDK_CFLAGS= -Wall -Wno-deprecated-declarations -Werror -include ${FF_DPDK}/include/rte_config.h
+#DPDK_CFLAGS+= -march=native -DRTE_MACHINE_CPUFLAG_SSE -DRTE_MACHINE_CPUFLAG_SSE2 -DRTE_MACHINE_CPUFLAG_SSE3
+#DPDK_CFLAGS+= -DRTE_MACHINE_CPUFLAG_SSSE3 -DRTE_MACHINE_CPUFLAG_SSE4_1 -DRTE_MACHINE_CPUFLAG_SSE4_2
+#DPDK_CFLAGS+= -DRTE_COMPILE_TIME_CPUFLAGS=RTE_CPUFLAG_SSE,RTE_CPUFLAG_SSE2,RTE_CPUFLAG_SSE3,RTE_CPUFLAG_SSSE3,RTE_CPUFLAG_SSE4_1,RTE_CPUFLAG_SSE4_2
+#DPDK_CFLAGS+= -I${FF_DPDK}/include
 
 KERNPREINCLUDES:= ${INCLUDES}
 INCLUDES= -I${OVERRIDE_INCLUDES_ROOT} ${KERNPREINCLUDES}
@@ -69,11 +68,11 @@ else
 HOST_CFLAGS = ${DEBUG} 
 endif
 
-ifdef FF_KNI
-HOST_CFLAGS+= -DFF_KNI
-endif
+#ifdef FF_KNI
+#HOST_CFLAGS+= -DFF_KNI
+#endif
 
-HOST_CFLAGS+= ${DPDK_CFLAGS}
+#HOST_CFLAGS+= ${DPDK_CFLAGS}
 HOST_CFLAGS+= ${CONF_CFLAGS}
 
 ifdef FF_NETGRAPH
@@ -182,11 +181,16 @@ VPATH+= $S/opencrypto
 VPATH+= $S/vm
 VPATH+= $S/libkern
 
+FF_SRCS+=                     \
+	ff_freebsd_init.c     \
+	ff_veth.c             \
+	ff_mbuf.c             \
+	ff_glue.c             \
+	ff_syscall_wrapper.c  \
+	ff_route.c
 
 FF_SRCS+=                     \
 	ff_compat.c           \
-	ff_glue.c             \
-	ff_freebsd_init.c     \
 	ff_init_main.c        \
 	ff_kern_condvar.c     \
 	ff_kern_environment.c \
@@ -195,11 +199,8 @@ FF_SRCS+=                     \
 	ff_kern_synch.c       \
 	ff_kern_timeout.c     \
 	ff_lock.c             \
-	ff_syscall_wrapper.c  \
 	ff_subr_prf.c         \
-	ff_vfs_ops.c          \
-	ff_veth.c             \
-	ff_route.c
+	ff_vfs_ops.c
 
 ifdef FF_NETGRAPH
 FF_SRCS+=                   \
@@ -209,17 +210,13 @@ endif
 
 FF_HOST_SRCS+=              \
 	ff_host_interface.c \
-	ff_config.c         \
-	ff_ini_parser.c     \
-	ff_dpdk_if.c        \
-	ff_dpdk_pcap.c      \
 	ff_epoll.c          \
 	ff_init.c	
 
-ifdef FF_KNI
-FF_HOST_SRCS+=              \
-	ff_dpdk_kni.c
-endif
+#ifdef FF_KNI
+#FF_HOST_SRCS+=              \
+#	ff_dpdk_kni.c
+#endif
 
 ifdef FF_USE_PAGE_ARRAY
 FF_HOST_SRCS+=              \
@@ -485,10 +482,10 @@ NETINET6_SRCS+=		\
 	#ip6_ipsec.c
 	#sctp6_usrreq.c
 	#in6_rss.c
-ifndef FF_KNI
-FF_HOST_SRCS+=         \
-        ff_dpdk_kni.c
-endif
+#ifndef FF_KNI
+#FF_HOST_SRCS+=         \
+#        ff_dpdk_kni.c
+#endif
 endif
 
 ifdef FF_IPFW

@@ -38,6 +38,7 @@ extern "C" {
 
 #include "ff_event.h"
 #include "ff_errno.h"
+#include "ff_veth.h"
 
 struct linux_sockaddr {
     short sa_family;
@@ -60,7 +61,8 @@ struct linux_sockaddr {
 
 typedef int (*loop_func_t)(void *arg);
 
-int ff_init(int argc, char * const argv[]);
+struct ff_veth_softc *ff_init(struct ff_veth_conf *conf, void *host_ctx);
+int ff_init_orig(int argc, char * const argv[]);
 
 void ff_run(loop_func_t loop, void *arg);
 

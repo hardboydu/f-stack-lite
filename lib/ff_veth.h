@@ -27,9 +27,33 @@
 #ifndef _FSTACK_VETH_H
 #define _FSTACK_VETH_H
 
-struct ff_port_cfg;
-void *ff_veth_attach(struct ff_port_cfg *cfg);
-int ff_veth_detach(void *arg);
+struct ff_veth_hw_features {
+    unsigned char rx_csum;
+    unsigned char rx_lro;
+    unsigned char tx_csum_ip;
+    unsigned char tx_csum_l4;
+    unsigned char tx_tso;
+};
+	
+struct ff_veth_softc {int unused ;} ;
+struct mbuf ;
+typedef int (*ff_sc_transmit)(struct ff_veth_softc *sc, void *host_ctx, struct mbuf *m) ;
+
+struct ff_veth_conf {
+	char    *name;
+	char    *mac ;
+    char    *ip;
+    char    *netmask;
+    char    *broadcast;
+    char    *gateway;
+
+    struct   ff_veth_hw_features hw_features;
+
+    ff_sc_transmit sc_transmit ;
+} ;
+
+struct ff_veth_softc *ff_veth_attach(struct ff_veth_conf *conf, void *host_ctx);
+int ff_veth_detach(struct ff_veth_softc *sc);
 
 void *ff_mbuf_gethdr(void *pkt, uint16_t total, void *data,
     uint16_t len, uint8_t rx_csum);
@@ -44,10 +68,9 @@ void* ff_rte_frm_extcl(void* mbuf);
 struct ff_tx_offload;
 void ff_mbuf_tx_offload(void *m, struct ff_tx_offload *offload);
 
-void ff_veth_process_packet(void *arg, void *m);
-
-void *ff_veth_softc_to_hostc(void *softc);
+void ff_veth_process_packet(struct ff_veth_softc *sc, void *m);
 
 void ff_mbuf_set_vlan_info(void *hdr, uint16_t vlan_tci);
 
 #endif /* ifndef _FSTACK_VETH_H */
+
