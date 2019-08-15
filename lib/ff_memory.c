@@ -61,7 +61,7 @@
 #include "ff_api.h"
 #include "ff_memory.h"
 
-#define PAGE_SIZE            4096
+#define    PAGE_SIZE             4096
 #define    PAGE_SHIFT            12
 #define    PAGE_MASK            (PAGE_SIZE - 1)
 #define    trunc_page(x)        ((x) & ~PAGE_MASK)
@@ -302,7 +302,7 @@ void *ff_mem_get_page()
     return (void*)stklist_pop(&ff_mpage_ctl);
 }
 
-int    ff_mem_free_addr(void *p)
+int ff_mem_free_addr(void *p)
 {
     stklist_push(&ff_mpage_ctl, (const uint64_t)p);
     return 0;
@@ -376,7 +376,7 @@ static inline void ff_offload_set(struct ff_dpdk_if_context *ctx, void *m, struc
 }
 
 // create rte_buf refer to data which is transmit from bsd stack by EXT_CLUSTER.
-static inline struct rte_mbuf*     ff_extcl_to_rte(void *m )
+static inline struct rte_mbuf* ff_extcl_to_rte(void *m )
 {
     struct rte_mempool *mbuf_pool = pktmbuf_pool[lcore_conf.socket_id];
     struct rte_mbuf *src_mbuf = NULL;
@@ -395,7 +395,7 @@ static inline struct rte_mbuf*     ff_extcl_to_rte(void *m )
 }
 
 //  create rte_mbuf refer to data in bsd mbuf.
-static inline struct rte_mbuf*     ff_bsd_to_rte(void *m, int total)
+static inline struct rte_mbuf* ff_bsd_to_rte(void *m, int total)
 {
     struct rte_mempool *mbuf_pool = ff_ref_pool[lcore_conf.socket_id];
     struct rte_mbuf *p_head = NULL;

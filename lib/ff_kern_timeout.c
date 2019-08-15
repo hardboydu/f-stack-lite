@@ -1204,11 +1204,16 @@ ff_hardclock(void)
     atomic_add_int(&ticks, 1);
     callout_tick();
     tc_ticktock(1);
-    cpu_tick_calibration();
 
+#if 0 /*Refer to the implementation of libuinet*/
+    cpu_tick_calibration();
+#endif
+
+#if 0 /*Refer to the implementation of libuinet*/
 #ifdef DEVICE_POLLING
     hardclock_device_poll();    /* this is very short and quick */
 #endif /* DEVICE_POLLING */
+#endif
 }
 
 static unsigned int
@@ -1231,3 +1236,4 @@ ff_tc_init(void)
 }
 SYSINIT(ff_tc, SI_SUB_SMP, SI_ORDER_ANY, ff_tc_init, NULL);
 #endif
+

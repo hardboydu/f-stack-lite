@@ -1173,9 +1173,11 @@ tc_init(struct timecounter *tc)
 			printf(" -- Insufficient hz, needs at least %u\n", u);
 		}
 	} else if (tc->tc_quality >= 0 || bootverbose) {
+		/*
 		printf("Timecounter \"%s\" frequency %ju Hz quality %d\n",
 		    tc->tc_name, (uintmax_t)tc->tc_frequency,
 		    tc->tc_quality);
+		*/
 	}
 
 	tc->tc_next = timecounters;
@@ -1913,7 +1915,7 @@ inittimecounter(void *dummy)
 	FREQ2BT(tick_rate, &tc_tick_bt);
 	tc_tick_sbt = bttosbt(tc_tick_bt);
 	p = (tc_tick * 1000000) / hz;
-	printf("Timecounters tick every %d.%03u msec\n", p / 1000, p % 1000);
+	/*printf("Timecounters tick every %d.%03u msec\n", p / 1000, p % 1000);*/
 
 #ifdef FFCLOCK
 	ffclock_init();

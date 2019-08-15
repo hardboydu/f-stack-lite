@@ -1293,7 +1293,7 @@ link_elf_lookup_symbol(linker_file_t lf, const char* name, c_linker_sym_t* sym)
 
 	/* If we don't have a hash, bail. */
 	if (ef->buckets == NULL || ef->nbuckets == 0) {
-		printf("link_elf_lookup_symbol: missing symbol hash table\n");
+		/*printf("link_elf_lookup_symbol: missing symbol hash table\n");*/
 		return (ENOENT);
 	}
 

@@ -74,9 +74,12 @@ struct ff_veth_softc_impl {
 static int
 ff_veth_config(struct ff_veth_softc_impl *sc, struct ff_veth_conf *conf)
 {
-	sscanf(conf->mac, "%x:%x:%x:%x:%x:%x%*c",
-		&sc->mac[0], &sc->mac[1], &sc->mac[2],
-		&sc->mac[3], &sc->mac[4], &sc->mac[5]) ;
+	uint8_t mac[ETHER_ADDR_LEN] ;
+	sscanf(conf->mac, "%02X:%02X:%02X:%02X:%02X:%02X",
+		&mac[0], &mac[1], &mac[2],
+		&mac[3], &mac[4], &mac[5]) ;
+
+	memcpy(sc->mac, mac, ETHER_ADDR_LEN) ;
 
     inet_pton(AF_INET, conf->ip,        &sc->ip);
     inet_pton(AF_INET, conf->netmask,   &sc->netmask);

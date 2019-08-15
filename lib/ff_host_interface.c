@@ -39,8 +39,6 @@
 #include <sched.h>
 #include <time.h>
 
-#include <openssl/rand.h>
-
 #include "ff_host_interface.h"
 #include "ff_errno.h"
 
@@ -219,7 +217,11 @@ uint32_t
 ff_arc4random(void)
 {
     uint32_t ret;
-    ff_arc4rand(&ret, sizeof ret, 0);
+	struct timespec timespec;
+
+	clock_gettime(CLOCK_MONOTONIC, &timespec);
+
+    ff_arc4rand(&ret, sizeof ret, timespec.tv_sec);
     return ret;
 }
 

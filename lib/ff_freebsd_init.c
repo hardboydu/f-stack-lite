@@ -59,6 +59,11 @@ struct boot_default {
 	{"net.inet.tcp.syncache.bucketlimit",    "100"},
 	{"net.inet.tcp.tcbhashsize"         ,  "65536"},
 	{"kern.ncallout"                    , "262144"},
+	{"kern.features.inet6"              ,      "1"},
+	{"net.inet6.ip6.auto_linklocal"     ,      "1"},
+	{"net.inet6.ip6.accept_rtadv"       ,      "2"},
+	{"net.inet6.icmp6.rediraccept"      ,      "1"},
+	{"net.inet6.ip6.forwarding"         ,      "0"},
 } ;
 
 struct sysctl_default {
@@ -72,7 +77,7 @@ struct sysctl_default {
 	{"net.inet.tcp.fast_finwait2_recycle" ,        "1", 'i'},
 	{"net.inet.tcp.sendspace"             ,    "16384", 'i'},
 	{"net.inet.tcp.recvspace"             ,     "8192", 'i'},
-	{"net.inet.tcp.nolocaltimewait"       ,        "1", 'i'},
+//	{"net.inet.tcp.nolocaltimewait"       ,        "1", 'i'},
 	{"net.inet.tcp.cc.algorithm"          ,    "cubic", 's'},
 	{"net.inet.tcp.sendbuf_max"           , "16777216", 'i'},
 	{"net.inet.tcp.recvbuf_max"           , "16777216", 'i'},

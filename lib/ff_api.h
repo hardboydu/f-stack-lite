@@ -224,6 +224,10 @@ int ff_ngctl(int cmd, void *data);
 
 /* internal api end */
 
+void ff_hardclock(void);
+void ff_update_current_ts(void) ;
+
+
 #ifdef __cplusplus
 }
 #endif
