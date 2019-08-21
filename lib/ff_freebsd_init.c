@@ -53,12 +53,12 @@ struct boot_default {
 	char *value ;
 } boot_default [] = {
 	{"kern.hz"                          ,    "100"}, 
+	{"kern.ncallout"                    , "262144"},
 	{"fd_reserve"                       ,   "2048"},
 	{"kern.ipc.maxsockets"              , "262144"},
 	{"net.inet.tcp.syncache.hashsize"   ,   "4096"},
 	{"net.inet.tcp.syncache.bucketlimit",    "100"},
 	{"net.inet.tcp.tcbhashsize"         ,  "65536"},
-	{"kern.ncallout"                    , "262144"},
 	{"kern.features.inet6"              ,      "1"},
 	{"net.inet6.ip6.auto_linklocal"     ,      "1"},
 	{"net.inet6.ip6.accept_rtadv"       ,      "2"},
