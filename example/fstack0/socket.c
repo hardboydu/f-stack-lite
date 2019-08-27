@@ -111,6 +111,8 @@ int socket_reconnect (struct sock *s) {
 
 	s->stat = SOCKET_STAT_CONNECTING ;
 
+	ff_close (s->fd) ;
+
 	s->fd = ff_socket(AF_INET, SOCK_STREAM, 0) ;
 	if ( s->fd < 0 )	{
 		err = 1 ;

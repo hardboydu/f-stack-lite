@@ -15,6 +15,8 @@
 #define EPOLL_MAX_EVENTS       10240
 #define READ_BUFFER_SIZE       8192
 
+struct timingwheel ;
+
 struct main_app {
 	int port ;
 	int port_count ;
@@ -45,6 +47,11 @@ struct main_app {
 	uint64_t sec_tsc ;
 	uint64_t pre_tsc ; 
 	uint64_t cur_tsc ;
+
+	struct timingwheel *tw ;
+
+	int client_num_config ;
+	int client_num_current ;
 } ;
 
 struct main_app *main_app_open(int argc, char *argv[]) ;

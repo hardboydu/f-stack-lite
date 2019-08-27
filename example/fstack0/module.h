@@ -12,12 +12,12 @@ typedef int (*module_data_cb) (struct module *mod, const char *data, uint32_t le
 typedef int (*module_cb) (struct module *mod) ;
 
 struct module_opt {
-	module_cb      on_connected ;
-	module_data_cb on_read ;
-	module_data_cb on_write ;
+	module_cb      connected ;
+	module_data_cb read ;
+	module_data_cb write ;
 
-	module_cb      on_reset ;
-	module_cb      on_close ;
+	module_cb      reset ;
+	module_cb      close ;
 } ;
 
 struct module {

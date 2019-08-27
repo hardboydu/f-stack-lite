@@ -10,10 +10,12 @@
 
 static const char short_options[] =
 	"p:"  /* port id */
+	"C:"  /* client numbers */
 	;
 static struct option long_options[] = {
-	{"port", required_argument, 0,  'p' },
-	{     0,                 0, 0,   0  }
+	{"port"      , required_argument, 0,  'p' },
+	{"client-num", required_argument, 0,  'C' },
+	{           0,                 0, 0,   0  }
 };
 
 int device_init(struct main_app *app, int argc, char *argv[]) {
@@ -39,6 +41,9 @@ int device_init(struct main_app *app, int argc, char *argv[]) {
 		switch (opt) {
 			case 'p':
 				app->port = atoi(optarg);
+				break;
+			case 'C':
+				app->client_num_config = atoi(optarg);
 				break;
 		}
 	}

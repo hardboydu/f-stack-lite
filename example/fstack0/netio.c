@@ -54,14 +54,14 @@ static int netio_on_error(struct main_app *app, struct sock *s) {
 	if(len > 0) {
 		if(!list_empty(&s->mods)) {
 			struct module *mod = list_entry(s->mods.next, struct module, node);
-			mod->op.on_read(mod, app->ff_read_buffer, len);
+			mod->op.read(mod, app->ff_read_buffer, len);
 		}
 	}
 
 	struct list_head *node ;
 	list_for_each(node, &s->mods) {
 		struct module *mod = list_entry(s->mods.next, struct module, node);
-		mod->op.on_reset(mod);
+		mod->op.reset(mod);
 	}
 		
 	event_del(app->event, s->fd);
@@ -81,11 +81,13 @@ static int netio_on_read(struct main_app *app, struct sock *s) {
 	if(len > 0) {
 		if(!list_empty(&s->mods)) {
 			struct module *mod = list_entry(s->mods.next, struct module, node);
-			mod->op.on_read(mod, app->ff_read_buffer, len);
+			mod->op.read(mod, app->ff_read_buffer, len);
 		}
 	} else {
 		if (len == SOCK_SHUTDOWN) {
+			netio_on_error(app, s);
 		} else {
+			netio_on_error(app, s);
 		}
 	}
 
@@ -106,13 +108,14 @@ static int netio_on_connected(struct main_app *app, struct sock *s) {
 
 	if(!list_empty(&s->mods)) {
 		struct module *mod = list_entry(s->mods.next, struct module, node);
-		mod->op.on_connected(mod);
+		mod->op.connected(mod);
 	}
 
 	return 0 ;
 }
 
 static int netio_on_connect_failed(struct main_app *app, struct sock *s) {
+
 	event_del(app->event, s->fd);
 	socket_close(s);
 

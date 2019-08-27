@@ -39,11 +39,11 @@ void *module_http_open(struct module *mod) {
 	
 	http->mod = mod ;
 
-	mod->op.on_connected = module_http_on_connected ;
-	mod->op.on_read      = module_http_on_read ;
-	mod->op.on_write     = module_http_on_write ;
-	mod->op.on_reset     = module_http_on_reset ;
-	mod->op.on_close     = module_http_on_close ;
+	mod->op.connected = module_http_on_connected ;
+	mod->op.read      = module_http_on_read ;
+	mod->op.write     = module_http_on_write ;
+	mod->op.reset     = module_http_on_reset ;
+	mod->op.close     = module_http_on_close ;
 
 	http_parser_init(&(http->response), HTTP_RESPONSE) ;
 
@@ -68,7 +68,7 @@ char HTTP_GET_EXAMPLE[] =
 "\r\n";
 
 static int module_http_on_connected(struct module *mod) {
-	mod->cb.on_write(mod, HTTP_GET_EXAMPLE, sizeof(HTTP_GET_EXAMPLE) - 1);
+	mod->cb.write(mod, HTTP_GET_EXAMPLE, sizeof(HTTP_GET_EXAMPLE) - 1);
 	return 0 ;
 } 
 
@@ -88,6 +88,7 @@ static int module_http_on_write(struct module *mod, const char *buf, uint32_t le
 static int module_http_on_reset(struct module *mod) {
 	struct module_http *http = (struct module_http *)mod->ctx ; 
 	http_parser_init(&(http->response), HTTP_RESPONSE) ;
+	http->count = 0 ;
 	return 0 ;
 }
 
@@ -127,9 +128,9 @@ static int http_message_complete_cb (http_parser *p) {
 	struct module_http *http = (struct module_http *)p->data ; 
 	struct module      *mod  = http->mod ;
 
-	mod->cb.on_write(mod, HTTP_GET_EXAMPLE, sizeof(HTTP_GET_EXAMPLE) - 1);
+	mod->cb.write(mod, HTTP_GET_EXAMPLE, sizeof(HTTP_GET_EXAMPLE) - 1);
 
-//	printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa %d\n", http->count++);
+//	printf("aaaaaaaaaaaaaaaaaaaaaaaaaaa %d\n", http->count++);
 
 	return 0;
 }
