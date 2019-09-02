@@ -18,7 +18,7 @@ int ff_next_mbuf(void **mbuf_bsd, void **data, unsigned *len);
 //void* ff_mbuf_mtod(void* bsd_mbuf);
 void* ff_rte_frm_extcl(void* mbuf);
 
-struct ff_veth_tx_offload {
+struct ff_tx_offload {
     unsigned char ip_csum;
     unsigned char tcp_csum;
     unsigned char udp_csum;
@@ -26,8 +26,7 @@ struct ff_veth_tx_offload {
     unsigned short tso_seg_size;
 };
 
-struct ff_tx_offload;
-void ff_mbuf_tx_offload(void *m, struct ff_veth_tx_offload *offload);
+void ff_mbuf_tx_offload(void *m, struct ff_tx_offload *offload);
 
 void ff_mbuf_set_vlan_info(void *hdr, unsigned short vlan_tci);
 

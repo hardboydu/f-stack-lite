@@ -109,7 +109,7 @@ unsigned int ff_mbuf_get_total_length(struct mbuf *m) {
 }
 
 void
-ff_mbuf_tx_offload(void *m, struct ff_veth_tx_offload *offload)
+ff_mbuf_tx_offload(void *m, struct ff_tx_offload *offload)
 {
     struct mbuf *mb = (struct mbuf *)m;
     if (mb->m_pkthdr.csum_flags & CSUM_IP) {

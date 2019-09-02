@@ -30,6 +30,8 @@ struct rte_mbuf *dpdk_ff_to_mbuf(struct rte_mempool *mempool, struct mbuf *m) {
 			return NULL ;
 		}
 
+		dpdk_m_h->nb_segs++ ;
+
 		dpdk_m_p->data_len  = len ;
 		ff_off             += len ;
 		ff_m_len           -= len ;
