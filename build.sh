@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 
-make
+function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V  | head -n 1)" != "$1"; }
+function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V  | head -n 1)" == "$1"; }
+function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
+function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"; }
+
+CC_VERSION=`/usr/bin/gcc -dumpversion`
+
+if version_lt $CC_VERSION "4.8.0" ; then
+	make CC=/opt/devrte/runtime/gcc-7.3.0/bin/gcc
+else
+	make
+fi
 
 mkdir -p /opt/lib64/f-stack/lib
 mkdir -p /opt/lib64/f-stack/include
