@@ -1106,7 +1106,7 @@ in_pcbconnect_setup(struct inpcb *inp, struct sockaddr *nam,
 			*oinpp = oinp;
 		return (EADDRINUSE);
 	}
-#ifndef FSTACK
+#ifdef FSTACK
 	if (lport == 0) {
 		error = in_pcbbind_setup(inp, NULL, &laddr.s_addr, &lport,
 		    cred);

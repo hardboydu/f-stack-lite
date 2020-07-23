@@ -61,6 +61,7 @@ ff_ipc_init(void)
     char *dpdk_argv[] = {
         "ff-ipc", "-c1", "-n4",
         "--proc-type=secondary",
+        "--base-virtaddr=0x1000000000",
         /* RTE_LOG_WARNING */
         "--log-level=5",
     };
